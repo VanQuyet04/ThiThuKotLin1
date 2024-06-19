@@ -47,7 +47,7 @@ enum class SortOrderPrice {
 }
 
 var mayTinhTemp: MayTinh =
-    MayTinh(ph35419_name = "", ph35419_price = 0f, ph35419_description = "", ph35419_status = false, ph35419_image = "")
+    MayTinh(ph35419_name = "", ph35419_price = 0f, ph35419_description = "", ph35419_status = false)
 
 @Composable
 fun ItemText(content: String) {
@@ -60,7 +60,8 @@ fun ItemText(content: String) {
 fun HomeScreen() {
     // Khai báo context và view model thao tác CRUD với UI
     val context = LocalContext.current
-    val viewModel: MayTinhViewmodel = viewModel(factory = MayTinhViewModelFactory(context.applicationContext as Application))
+    val viewModel: MayTinhViewmodel =
+        viewModel(factory = MayTinhViewModelFactory(context.applicationContext as Application))
     val mayTinhs by viewModel.getAll.observeAsState(emptyList())
 
     // Tìm kiếm
@@ -85,8 +86,7 @@ fun HomeScreen() {
                 ph35419_name = "",
                 ph35419_price = 0f,
                 ph35419_description = "",
-                ph35419_status = false,
-                ph35419_image = ""
+                ph35419_status = false
             ),
             onDismiss = { showDialogItemInfor = false },
             onConfirm = { showDialogItemInfor = false }
@@ -112,7 +112,12 @@ fun HomeScreen() {
             onConfirm = {
                 viewModel.insert(mayTinhTemp.copy())
                 showDialogThemMayTinh = false
-                mayTinhTemp = MayTinh(ph35419_name = "", ph35419_price = 0f, ph35419_description = "", ph35419_status = false, ph35419_image = "")
+                mayTinhTemp = MayTinh(
+                    ph35419_name = "",
+                    ph35419_price = 0f,
+                    ph35419_description = "",
+                    ph35419_status = false
+                )
             }
         )
     }
@@ -125,7 +130,12 @@ fun HomeScreen() {
             onConfirm = {
                 viewModel.update(mayTinhTemp.copy())
                 showDialogSuaMayTinh = false
-                mayTinhTemp = MayTinh(ph35419_name = "", ph35419_price = 0f, ph35419_description = "", ph35419_status = false, ph35419_image = "")
+                mayTinhTemp = MayTinh(
+                    ph35419_name = "",
+                    ph35419_price = 0f,
+                    ph35419_description = "",
+                    ph35419_status = false
+                )
             }
         )
     }
@@ -185,7 +195,13 @@ fun HomeScreen() {
                 .padding(top = 16.dp)
         ) {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(getSortedMayTinhs(if (searchKeyword.isNotEmpty()) filteredMayTinhs else mayTinhs, sortOrder, sortOrderPrice)) { item ->
+                items(
+                    getSortedMayTinhs(
+                        if (searchKeyword.isNotEmpty()) filteredMayTinhs else mayTinhs,
+                        sortOrder,
+                        sortOrderPrice
+                    )
+                ) { item ->
                     MayTinhItem(
                         mayTinh = item,
                         onItemClicked = {
@@ -240,33 +256,13 @@ fun ShowDialogThemSuaSP(
     var ph35419_price by remember { mutableStateOf(mayTinh?.ph35419_price?.toString() ?: "") }
     var ph35419_description by remember { mutableStateOf(mayTinh?.ph35419_description ?: "") }
     var ph35419_status by remember { mutableStateOf(mayTinh?.ph35419_status ?: false) }
-    var ph35419_image by remember { mutableStateOf(mayTinh?.ph35419_image ?: "") }
 
     // Text error state
     var ph35419_nameError by remember { mutableStateOf(false) }
     var ph35419_priceError by remember { mutableStateOf(false) }
     var ph35419_descriptionError by remember { mutableStateOf(false) }
-    var ph35419_imageError by remember { mutableStateOf(false) }
 
-    val context = LocalContext.current
 
-    val launcher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
-            uri?.let {
-                ph35419_image = it.toString()
-                try {
-                    val flag = Intent.FLAG_GRANT_READ_URI_PERMISSION
-                    context.contentResolver.takePersistableUriPermission(it, flag)
-                } catch (e: SecurityException) {
-                    Toast.makeText(
-                        context,
-                        "Không thể cấp quyền truy cập cho tệp tin được chọn",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    e.printStackTrace()
-                }
-            }
-        }
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
@@ -277,21 +273,18 @@ fun ShowDialogThemSuaSP(
                     ph35419_nameError = ph35419_name.isEmpty()
                     ph35419_priceError = ph35419_price.isEmpty()
                     ph35419_descriptionError = ph35419_description.isEmpty()
-                    ph35419_imageError = ph35419_image.isEmpty()
 
-                    if (!ph35419_nameError && !ph35419_priceError && !ph35419_descriptionError && !ph35419_imageError) {
+                    if (!ph35419_nameError && !ph35419_priceError && !ph35419_descriptionError) {
                         val updatedMayTinh = mayTinh?.copy(
                             ph35419_name = ph35419_name,
                             ph35419_price = ph35419_price.toBigDecimal().toFloat(),
                             ph35419_description = ph35419_description,
                             ph35419_status = ph35419_status,
-                            ph35419_image = ph35419_image
                         ) ?: MayTinh(
                             ph35419_name = ph35419_name,
                             ph35419_price = ph35419_price.toBigDecimal().toFloat(),
                             ph35419_description = ph35419_description,
                             ph35419_status = ph35419_status,
-                            ph35419_image = ph35419_image
                         )
                         mayTinhTemp = updatedMayTinh
                         onConfirm()
@@ -315,37 +308,6 @@ fun ShowDialogThemSuaSP(
         },
         text = {
             Column {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .background(Color.Gray)
-                        .clickable {
-                            launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                        },
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (ph35419_image.isNotEmpty()) {
-                        AsyncImage(
-                            model = ph35419_image,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(RoundedCornerShape(10.dp)),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        Text(text = "Chọn ảnh", color = Color.White)
-                    }
-                }
-
-                if (ph35419_imageError) {
-                    Text(
-                        text = "Ảnh máy tính không được để trống",
-                        color = Color.Red,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
 
                 TextField(
                     value = ph35419_name,
@@ -431,7 +393,7 @@ fun ShowDialog(
     title: String, content: String, onDismiss: () -> Unit, onConfirm: () -> Unit
 ) {
     AlertDialog(onDismissRequest = { onDismiss() }, containerColor = Color.White, confirmButton = {
-        Button(onClick = { onConfirm() },colors = ButtonDefaults.buttonColors(Color.Red)) {
+        Button(onClick = { onConfirm() }, colors = ButtonDefaults.buttonColors(Color.Red)) {
             Text(text = "Xác nhận")
         }
     }, dismissButton = {
@@ -447,22 +409,13 @@ fun ShowDialoginfo(
     title: String, mayTinh: MayTinh, onDismiss: () -> Unit, onConfirm: () -> Unit
 ) {
     AlertDialog(onDismissRequest = { onDismiss() }, containerColor = Color.White, confirmButton = {
-        Button(onClick = { onConfirm() },colors = ButtonDefaults.buttonColors(Color.Blue)) {
+        Button(onClick = { onConfirm() }, colors = ButtonDefaults.buttonColors(Color.Blue)) {
             Text(text = "Close")
         }
     }, title = { Text(text = title) },
         text = {
             Column {
-                AsyncImage(
-                    model = mayTinh.ph35419_image,
-                    contentDescription = "",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .padding(bottom = 10.dp)
-                        .clip(RoundedCornerShape(10.dp)),
-                    contentScale = ContentScale.Crop
-                )
+
                 Text(text = "Tên máy tính: ${mayTinh.ph35419_name}")
                 Text(text = "Giá máy tính: ${mayTinh.ph35419_price}")
                 Text(text = "Mô tả máy tính: ${mayTinh.ph35419_description ?: ""}")
@@ -497,14 +450,6 @@ fun MayTinhItem(
                     .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                AsyncImage(
-                    model = mayTinh.ph35419_image,
-                    contentDescription = "",
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(RoundedCornerShape(10.dp)),
-                    contentScale = ContentScale.Crop
-                )
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     ItemText(content = "Tên: ${mayTinh.ph35419_name}")

@@ -10,5 +10,4 @@ data class MayTinh(
     var ph35419_name: String,
     var ph35419_description: String?,
     var ph35419_status: Boolean,
-    var ph35419_image: String
 )
