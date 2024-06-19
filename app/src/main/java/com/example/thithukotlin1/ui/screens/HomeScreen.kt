@@ -32,7 +32,6 @@ import coil.compose.AsyncImage
 import com.example.thithukotlin1.room.MayTinh
 import com.example.thithukotlin1.room.MayTinhViewModelFactory
 import com.example.thithukotlin1.room.MayTinhViewmodel
-import java.text.DecimalFormat
 import java.text.Normalizer
 import java.util.regex.Pattern
 
