@@ -1,13 +1,7 @@
 package com.example.thithukotlin1.ui.screens
 
 import android.app.Application
-import android.content.Intent
-import android.net.Uri
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,18 +15,14 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
 import com.example.thithukotlin1.room.MayTinh
 import com.example.thithukotlin1.room.MayTinhViewModelFactory
 import com.example.thithukotlin1.room.MayTinhViewmodel
-import java.text.DecimalFormat
 import java.text.Normalizer
 import java.util.regex.Pattern
 
@@ -263,6 +253,7 @@ fun ShowDialogThemSuaSP(
     var ph35419_descriptionError by remember { mutableStateOf(false) }
 
 
+    var context = LocalContext.current
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
@@ -270,30 +261,37 @@ fun ShowDialogThemSuaSP(
         confirmButton = {
             Button(
                 onClick = {
-                    ph35419_nameError = ph35419_name.isEmpty()
-                    ph35419_priceError = ph35419_price.isEmpty()
-                    ph35419_descriptionError = ph35419_description.isEmpty()
+                    try {
+                        ph35419_nameError = ph35419_name.isEmpty()
+                        ph35419_priceError = ph35419_price.isEmpty()
+                        ph35419_descriptionError = ph35419_description.isEmpty()
 
-                    if (!ph35419_nameError && !ph35419_priceError && !ph35419_descriptionError) {
-                        val updatedMayTinh = mayTinh?.copy(
-                            ph35419_name = ph35419_name,
-                            ph35419_price = ph35419_price.toBigDecimal().toFloat(),
-                            ph35419_description = ph35419_description,
-                            ph35419_status = ph35419_status,
-                        ) ?: MayTinh(
-                            ph35419_name = ph35419_name,
-                            ph35419_price = ph35419_price.toBigDecimal().toFloat(),
-                            ph35419_description = ph35419_description,
-                            ph35419_status = ph35419_status,
-                        )
-                        mayTinhTemp = updatedMayTinh
-                        onConfirm()
+                        if (!ph35419_nameError && !ph35419_priceError && !ph35419_descriptionError) {
+                            val updatedMayTinh = mayTinh?.copy(
+                                ph35419_name = ph35419_name,
+                                ph35419_price = ph35419_price.toBigDecimal().toFloat(),
+                                ph35419_description = ph35419_description,
+                                ph35419_status = ph35419_status,
+                            ) ?: MayTinh(
+                                ph35419_name = ph35419_name,
+                                ph35419_price = ph35419_price.toBigDecimal().toFloat(),
+                                ph35419_description = ph35419_description,
+                                ph35419_status = ph35419_status,
+                            )
+                            mayTinhTemp = updatedMayTinh
+                            onConfirm()
+                        }
+                    } catch (e: NumberFormatException) {
+                        // Xử lý khi nhập giá không hợp lệ
+                        Toast.makeText(context, "Giá máy tính không hợp lệ", Toast.LENGTH_SHORT).show()
+                        e.printStackTrace()
                     }
                 },
                 colors = ButtonDefaults.buttonColors(Color.Blue)
             ) {
                 Text(text = "Xác nhận")
             }
+
         },
         dismissButton = {
             Button(
