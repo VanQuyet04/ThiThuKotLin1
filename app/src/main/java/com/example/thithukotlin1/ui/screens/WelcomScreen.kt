@@ -47,7 +47,7 @@ fun WelcomeScreen(navController: NavController) {
 
         )
         Text(
-            text = "19-06-2024",
+            text = "20-06-2024",
             fontSize = 22.sp,
             fontWeight = FontWeight(500),
             modifier = Modifier.padding(top = 5.dp)

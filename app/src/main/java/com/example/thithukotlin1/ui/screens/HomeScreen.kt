@@ -41,6 +41,10 @@ enum class SortOrder {
     NONE, AZ, ZA
 }
 
+// Enum cho sắp xếp theo giá
+enum class SortOrderPrice {
+    NONE, ASC, DESC
+}
 
 var mayTinhTemp: MayTinh =
     MayTinh(ph35419_name = "", ph35419_price = 0f, ph35419_description = "", ph35419_status = false, ph35419_image = "")
@@ -65,6 +69,7 @@ fun HomeScreen() {
 
     // Trạng thái sắp xếp
     var sortOrder by remember { mutableStateOf(SortOrder.NONE) }
+    var sortOrderPrice by remember { mutableStateOf(SortOrderPrice.NONE) }
 
     // Các state xác định mở hay đóng các dialog, mặc định là đóng
     var showDialogItemInfor by remember { mutableStateOf(false) }
@@ -136,14 +141,14 @@ fun HomeScreen() {
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
 
-        /*OutlinedTextField(
-            value = searchKeyword,
-            onValueChange = { searchKeyword = it },
-            label = { Text("Tìm kiếm máy tính") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        )*/
+//        OutlinedTextField(
+//            value = searchKeyword,
+//            onValueChange = { searchKeyword = it },
+//            label = { Text("Tìm kiếm máy tính") },
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(horizontal = 16.dp, vertical = 8.dp)
+//        )
 
         // Thêm các nút sắp xếp
         Row(
@@ -160,13 +165,27 @@ fun HomeScreen() {
             }
         }
 
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Button(onClick = { sortOrderPrice = SortOrderPrice.ASC }) {
+                Text("Giá tăng dần")
+            }
+            Button(onClick = { sortOrderPrice = SortOrderPrice.DESC }) {
+                Text("Giá giảm dần")
+            }
+        }
+
         Box(
             Modifier
                 .fillMaxSize()
                 .padding(top = 16.dp)
         ) {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(getSortedMayTinhs(if (searchKeyword.isNotEmpty()) filteredMayTinhs else mayTinhs, sortOrder)) { item ->
+                items(getSortedMayTinhs(if (searchKeyword.isNotEmpty()) filteredMayTinhs else mayTinhs, sortOrder, sortOrderPrice)) { item ->
                     MayTinhItem(
                         mayTinh = item,
                         onItemClicked = {
@@ -520,10 +539,22 @@ fun removeAccents(input: String): String {
 }
 
 // Hàm sắp xếp danh sách máy tính
-fun getSortedMayTinhs(mayTinhs: List<MayTinh>, sortOrder: SortOrder): List<MayTinh> {
-    return when (sortOrder) {
-        SortOrder.AZ -> mayTinhs.sortedBy { it.ph35419_name }
-        SortOrder.ZA -> mayTinhs.sortedByDescending { it.ph35419_name }
-        else -> mayTinhs
+fun getSortedMayTinhs(
+    mayTinhs: List<MayTinh>,
+    sortOrder: SortOrder,
+    sortOrderPrice: SortOrderPrice
+): List<MayTinh> {
+    var sortedList = when (sortOrder) {
+        SortOrder.NONE -> mayTinhs
+        SortOrder.AZ -> mayTinhs.sortedBy { it.ph35419_name.lowercase() }
+        SortOrder.ZA -> mayTinhs.sortedByDescending { it.ph35419_name.lowercase() }
     }
+
+    sortedList = when (sortOrderPrice) {
+        SortOrderPrice.NONE -> sortedList
+        SortOrderPrice.ASC -> sortedList.sortedBy { it.ph35419_price }
+        SortOrderPrice.DESC -> sortedList.sortedByDescending { it.ph35419_price }
+    }
+
+    return sortedList
 }

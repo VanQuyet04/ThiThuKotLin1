@@ -1,8 +1,6 @@
 package com.example.thithukotlin1.room
 
 import androidx.annotation.WorkerThread
-import com.example.thithukotlin1.room.MayTinh
-import com.example.thithukotlin1.room.MayTinhDao
 import kotlinx.coroutines.flow.Flow
 
 class MayTinhResponsitory(private val mayTinhDao: MayTinhDao) {
