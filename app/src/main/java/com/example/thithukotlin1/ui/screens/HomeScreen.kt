@@ -274,33 +274,40 @@ fun ShowDialogThemSuaSP(
         confirmButton = {
             Button(
                 onClick = {
-                    ph35419_nameError = ph35419_name.isEmpty()
-                    ph35419_priceError = ph35419_price.isEmpty()
-                    ph35419_descriptionError = ph35419_description.isEmpty()
-                    ph35419_imageError = ph35419_image.isEmpty()
+                    try {
+                        ph35419_nameError = ph35419_name.isEmpty()
+                        ph35419_priceError = ph35419_price.isEmpty()
+                        ph35419_descriptionError = ph35419_description.isEmpty()
+                        ph35419_imageError = ph35419_image.isEmpty()
 
-                    if (!ph35419_nameError && !ph35419_priceError && !ph35419_descriptionError && !ph35419_imageError) {
-                        val updatedMayTinh = mayTinh?.copy(
-                            ph35419_name = ph35419_name,
-                            ph35419_price = ph35419_price.toBigDecimal().toFloat(),
-                            ph35419_description = ph35419_description,
-                            ph35419_status = ph35419_status,
-                            ph35419_image = ph35419_image
-                        ) ?: MayTinh(
-                            ph35419_name = ph35419_name,
-                            ph35419_price = ph35419_price.toBigDecimal().toFloat(),
-                            ph35419_description = ph35419_description,
-                            ph35419_status = ph35419_status,
-                            ph35419_image = ph35419_image
-                        )
-                        mayTinhTemp = updatedMayTinh
-                        onConfirm()
+                        if (!ph35419_nameError && !ph35419_priceError && !ph35419_descriptionError && !ph35419_imageError) {
+                            val updatedMayTinh = mayTinh?.copy(
+                                ph35419_name = ph35419_name,
+                                ph35419_price = ph35419_price.toBigDecimal().toFloat(),
+                                ph35419_description = ph35419_description,
+                                ph35419_status = ph35419_status,
+                                ph35419_image = ph35419_image
+                            ) ?: MayTinh(
+                                ph35419_name = ph35419_name,
+                                ph35419_price = ph35419_price.toBigDecimal().toFloat(),
+                                ph35419_description = ph35419_description,
+                                ph35419_status = ph35419_status,
+                                ph35419_image = ph35419_image
+                            )
+                            mayTinhTemp = updatedMayTinh
+                            onConfirm()
+                        }
+                    } catch (e: NumberFormatException) {
+                        // Xử lý khi nhập giá không hợp lệ
+                        Toast.makeText(context, "Giá máy tính không hợp lệ", Toast.LENGTH_SHORT).show()
+                        e.printStackTrace()
                     }
                 },
                 colors = ButtonDefaults.buttonColors(Color.Blue)
             ) {
                 Text(text = "Xác nhận")
             }
+
         },
         dismissButton = {
             Button(
