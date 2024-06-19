@@ -36,6 +36,12 @@ import java.text.DecimalFormat
 import java.text.Normalizer
 import java.util.regex.Pattern
 
+// Enum cho thứ tự sắp xếp
+enum class SortOrder {
+    NONE, AZ, ZA
+}
+
+
 var mayTinhTemp: MayTinh =
     MayTinh(ph35419_name = "", ph35419_price = 0f, ph35419_description = "", ph35419_status = false, ph35419_image = "")
 
@@ -48,20 +54,21 @@ fun ItemText(content: String) {
 
 @Composable
 fun HomeScreen() {
-    //khai báo context và view model thao tác crud với UI
+    // Khai báo context và view model thao tác CRUD với UI
     val context = LocalContext.current
-    val viewModel: MayTinhViewmodel =
-        viewModel(factory = MayTinhViewModelFactory(context.applicationContext as Application))
+    val viewModel: MayTinhViewmodel = viewModel(factory = MayTinhViewModelFactory(context.applicationContext as Application))
     val mayTinhs by viewModel.getAll.observeAsState(emptyList())
 
     // Tìm kiếm
     var filteredMayTinhs by remember { mutableStateOf<List<MayTinh>>(emptyList()) }
     var searchKeyword by remember { mutableStateOf("") }
 
-    var showDialogItemInfor by remember { mutableStateOf(false) } // xem chi tiết
-    var sp: MayTinh? by remember { mutableStateOf(null) }
+    // Trạng thái sắp xếp
+    var sortOrder by remember { mutableStateOf(SortOrder.NONE) }
 
-    // các state xác định mở hay đóg các dialog, mặc định là đóng
+    // Các state xác định mở hay đóng các dialog, mặc định là đóng
+    var showDialogItemInfor by remember { mutableStateOf(false) }
+    var sp: MayTinh? by remember { mutableStateOf(null) }
     var showDialogXoaSp by remember { mutableStateOf(false) }
     var showDialogThemMayTinh by remember { mutableStateOf(false) }
     var showDialogSuaMayTinh by remember { mutableStateOf(false) }
@@ -100,8 +107,7 @@ fun HomeScreen() {
             onConfirm = {
                 viewModel.insert(mayTinhTemp.copy())
                 showDialogThemMayTinh = false
-                mayTinhTemp =
-                    MayTinh(ph35419_name = "", ph35419_price = 0f, ph35419_description = "", ph35419_status = false, ph35419_image = "")
+                mayTinhTemp = MayTinh(ph35419_name = "", ph35419_price = 0f, ph35419_description = "", ph35419_status = false, ph35419_image = "")
             }
         )
     }
@@ -114,8 +120,7 @@ fun HomeScreen() {
             onConfirm = {
                 viewModel.update(mayTinhTemp.copy())
                 showDialogSuaMayTinh = false
-                mayTinhTemp =
-                    MayTinh(ph35419_name = "", ph35419_price = 0f, ph35419_description = "", ph35419_status = false, ph35419_image = "")
+                mayTinhTemp = MayTinh(ph35419_name = "", ph35419_price = 0f, ph35419_description = "", ph35419_status = false, ph35419_image = "")
             }
         )
     }
@@ -130,21 +135,38 @@ fun HomeScreen() {
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
-        OutlinedTextField(
+
+        /*OutlinedTextField(
             value = searchKeyword,
             onValueChange = { searchKeyword = it },
             label = { Text("Tìm kiếm máy tính") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
-        )
+        )*/
+
+        // Thêm các nút sắp xếp
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Button(onClick = { sortOrder = SortOrder.AZ }) {
+                Text("Sắp xếp A-Z")
+            }
+            Button(onClick = { sortOrder = SortOrder.ZA }) {
+                Text("Sắp xếp Z-A")
+            }
+        }
+
         Box(
             Modifier
                 .fillMaxSize()
                 .padding(top = 16.dp)
         ) {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(if (searchKeyword.isNotEmpty()) filteredMayTinhs else mayTinhs) { item ->
+                items(getSortedMayTinhs(if (searchKeyword.isNotEmpty()) filteredMayTinhs else mayTinhs, sortOrder)) { item ->
                     MayTinhItem(
                         mayTinh = item,
                         onItemClicked = {
@@ -184,13 +206,9 @@ fun HomeScreen() {
                 }
                 onDispose { }
             }
-
-
         }
     }
-
 }
-
 
 @Composable
 fun ShowDialogThemSuaSP(
@@ -499,4 +517,13 @@ fun removeAccents(input: String): String {
     val normalized = Normalizer.normalize(input, Normalizer.Form.NFD)
     val pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+")
     return pattern.matcher(normalized).replaceAll("")
+}
+
+// Hàm sắp xếp danh sách máy tính
+fun getSortedMayTinhs(mayTinhs: List<MayTinh>, sortOrder: SortOrder): List<MayTinh> {
+    return when (sortOrder) {
+        SortOrder.AZ -> mayTinhs.sortedBy { it.ph35419_name }
+        SortOrder.ZA -> mayTinhs.sortedByDescending { it.ph35419_name }
+        else -> mayTinhs
+    }
 }
